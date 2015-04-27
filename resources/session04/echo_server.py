@@ -3,19 +3,15 @@ import sys
 
 
 def server(log_buffer=sys.stderr):
-    # set an address for our server
     address = ('127.0.0.1', 10000)
-    # TODO: Replace the following line with your code which will instantiate
-    #       a TCP socket with IPv4 Addressing, call the socket you make 'sock'
-    sock = None
-    # TODO: Set an option to allow the socket address to be reused immediately
-    #       see the end of http://docs.python.org/2/library/socket.html
+    sock = socket.socket(family='AF_INET', type='SOCK_STEAM', proto='IPPROTO_IP')
+    # setting socket options, man setsockopt
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    # log that we are building a server
     print >>log_buffer, "making a server on {0}:{1}".format(*address)
 
-    # TODO: bind your new sock 'sock' to the address above and begin to listen
-    #       for incoming connections
+    sock.bind(address)
+    sock.listen(1)
 
     try:
         # the outer loop controls the creation of new connection sockets. The
