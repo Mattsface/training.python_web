@@ -4,8 +4,8 @@ import sys
 
 def server(log_buffer=sys.stderr):
     address = ('127.0.0.1', 10000)
-    sock = socket.socket(family='AF_INET', type='SOCK_STEAM', proto='IPPROTO_IP')
-    # setting socket options, man setsockopt
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # setting socket options,   $ man setsockopt
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     print >>log_buffer, "making a server on {0}:{1}".format(*address)
@@ -24,7 +24,9 @@ def server(log_buffer=sys.stderr):
             #       the client so we can report it below.  Replace the
             #       following line with your code. It is only here to prevent
             #       syntax errors
-            addr = ('bar', 'baz')
+
+            conn, addr = sock.accept()
+            #addr = ('bar', 'baz')
             try:
                 print >>log_buffer, 'connection - {0}:{1}'.format(*addr)
 
@@ -37,28 +39,31 @@ def server(log_buffer=sys.stderr):
                     #       following line with your code.  It's only here as
                     #       a placeholder to prevent an error in string
                     #       formatting
-                    data = ''
+                    data = conn.recv(16)
                     print >>log_buffer, 'received "{0}"'.format(data)
                     # TODO: you will need to check here to see if any data was
                     #       received.  If so, send the data you got back to
                     #       the client.  If not, exit the inner loop and wait
                     #       for a new connection from a client
-
+                    if conn:
+                        conn.send(data)
+                    else:
+                        continue
             finally:
                 # TODO: When the inner loop exits, this 'finally' clause will
                 #       be hit. Use that opportunity to close the socket you
                 #       created above when a client connected.  Replace the
                 #       call to `pass` below, which is only there to prevent
                 #       syntax problems
-                pass
+                conn.close()
 
     except KeyboardInterrupt:
         # TODO: Use the python KeyboardIntterupt exception as a signal to
         #       close the server socket and exit from the server function.
         #       Replace the call to `pass` below, which is only there to
         #       prevent syntax problems
-        pass
-
+        conn.close()
+        sys.exit(0)
 
 if __name__ == '__main__':
     server()
