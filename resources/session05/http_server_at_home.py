@@ -1,6 +1,7 @@
 import socket
 import sys
 import os
+import mimetypes
 
 
 def response_ok():
@@ -34,7 +35,11 @@ def response_not_found():
     """
     returns a 404 response if the resource does not exist.
     """
-    pass
+    resp = []
+    resp.append("HTTP/1.1 404 Not Found")
+    resp.append("Content-Type: text/plain")
+    resp.append("")
+    return "\r\n".join(resp)
 
 
 def parse_request(request):
