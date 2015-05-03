@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 
 
 def response_ok():
@@ -18,6 +19,22 @@ def response_method_not_allowed():
     resp.append("HTTP/1.1 405 Method Not Allowed")
     resp.append("")
     return "\r\n".join(resp)
+
+
+def resolve_uri(uri):
+    """
+    Function that handles looking resources on disk using the URI.
+    return content and type
+    """
+    homedir = os.cwd()
+    pass
+
+
+def response_not_found():
+    """
+    returns a 404 response if the resource does not exist.
+    """
+    pass
 
 
 def parse_request(request):
@@ -55,17 +72,13 @@ def server():
                 except NotImplementedError:
                     response = response_method_not_allowed()
                 else:
-                    # replace this line with the following once you have
-                    # written resolve_uri
-                    response = response_ok()
-                    # content, type = resolve_uri(uri) # change this line
+                    content, type = resolve_uri(uri)
 
-                    ## uncomment this try/except block once you have fixed
-                    ## response_ok and added response_not_found
-                    # try:
-                    #     response = response_ok(content, type)
-                    # except NameError:
-                    #     response = response_not_found()
+                try:
+                    response = response_ok(content, type)
+                except NameError:
+                    response = response_not_found()
+
 
                 print >>sys.stderr, 'sending response'
                 conn.sendall(response)
