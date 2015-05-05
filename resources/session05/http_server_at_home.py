@@ -4,13 +4,13 @@ import os
 import mimetypes
 
 
-def response_ok():
+def response_ok(content, mime_type):
     """returns a basic HTTP response"""
     resp = []
     resp.append("HTTP/1.1 200 OK")
-    resp.append("Content-Type: text/plain")
+    resp.append(mime_type)
     resp.append("")
-    resp.append("this is a pretty minimal response")
+    resp.append(content)
     return "\r\n".join(resp)
 
 
@@ -27,8 +27,19 @@ def resolve_uri(uri):
     Function that handles looking resources on disk using the URI.
     return content and type
     """
-    homedir = os.cwd()
-    pass
+    current_dir = os.cwd()
+    path = os.path.join(current_dir + uri)
+    try:
+        if os.path.isdir(path):
+            pass
+            # return a plain-text listing and the mimetype text/plain.
+        elif os.path.isfile(path):
+            pass
+            # return the contents of that file and its correct mimetype.
+        else:
+            raise NameError("Page not found")
+    except:
+        raise NameError("Page Not found")
 
 
 def response_not_found():
@@ -77,12 +88,12 @@ def server():
                 except NotImplementedError:
                     response = response_method_not_allowed()
                 else:
-                    content, type = resolve_uri(uri)
+                    content, mime_type = resolve_uri(uri)
 
-                try:
-                    response = response_ok(content, type)
-                except NameError:
-                    response = response_not_found()
+                    try:
+                        response = response_ok(content, mime_type)
+                    except NameError:
+                        response = response_not_found()
 
 
                 print >>sys.stderr, 'sending response'
