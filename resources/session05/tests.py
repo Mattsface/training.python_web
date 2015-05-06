@@ -147,7 +147,9 @@ class ParseRequestTestCase(unittest.TestCase):
             self.assertRaises(
                 NotImplementedError, self.call_function_under_test, request
             )
-
+    def test_returns_uri(self):
+        pass
+        #TODO Write test that parse request returns the URI
 
 class HTTPServerFunctionalTestCase(unittest.TestCase):
     """functional tests of the HTTP Server
