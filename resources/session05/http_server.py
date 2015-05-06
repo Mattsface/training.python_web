@@ -22,17 +22,17 @@ def response_method_not_allowed():
     return "\r\n".join(resp)
 
 
+# TODO create testing class for resolve_uri
 def resolve_uri(uri):
     """
     Function that handles looking resources on disk using the URI.
     return content and type
     """
-    webroot = os.path.join(os.getcwd() + "/webroot")
+    webroot = "webroot"
     path = os.path.join(webroot + uri)
-    print path
-
     if os.path.isdir(path):
-        return path, 'text/plain'
+        ls = "\n".join(os.listdir(path))
+        return ls, 'text/plain'
     elif os.path.isfile(path):
         mime_type, encoding = mimetypes.guess_type(path)
         file_contents = file(path, 'rb')
@@ -40,8 +40,7 @@ def resolve_uri(uri):
         file_contents.close()
         return page, mime_type
     else:
-        return None
-
+        raise ValueError("Could not find resource")
 
 def response_not_found():
     """
@@ -54,7 +53,7 @@ def response_not_found():
     resp.append("404 Not Found")
     return "\r\n".join(resp)
 
-
+# TODO Write tests for URI
 def parse_request(request):
     first_line = request.split(""
                                "\r\n", 1)[0]
@@ -88,18 +87,13 @@ def server():
 
                 try:
                     uri = parse_request(request)
+                    content, mime_type = resolve_uri(uri)
                 except NotImplementedError:
                     response = response_method_not_allowed()
+                except ValueError:
+                    response = response_not_found()
                 else:
-                    try:
-                        content, mime_type = resolve_uri(uri)
-                    except TypeError:
-                        response = response_not_found()
-
-                    try:
-                        response = response_ok(content, mime_type)
-                    except:
-                        response = response_not_found()
+                    response = response_ok(content, mime_type)
 
 
                 print >>sys.stderr, 'sending response'

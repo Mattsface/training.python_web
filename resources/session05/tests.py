@@ -14,10 +14,10 @@ class ResponseOkTestCase(unittest.TestCase):
     running.
     """
 
-    def call_function_under_test(self):
+    def call_function_under_test(self, body="", mimetype="text/plain"):
         """call the `response_ok` function from our http_server module"""
         from http_server import response_ok
-        return response_ok()
+        return response_ok(body, mimetype)
 
     def test_response_code(self):
         ok = self.call_function_under_test()
@@ -55,6 +55,52 @@ class ResponseOkTestCase(unittest.TestCase):
                 self.assertTrue(value.strip() in KNOWN_TYPES)
                 return
         self.fail('no content type header found')
+
+    def test_passed_mimetype_in_response(self):
+        mimetypes = ["text/plain", "text/html"]
+
+        for expected in mimetypes:
+            ok = self.call_function_under_test(mimetype=expected)
+            headers = ok.split(CRLF+CRLF, 1)[0].split(CRLF)[1:]
+            for header in headers:
+                name, value = header.split(':')
+                value = value.strip()
+                self.assertEqual(value, expected,
+                "Expected: {}, but got {}".format(expected, value))
+
+    def test_passed_body_in_response(self):
+        # TODO make this test a little more complicated
+        test_bodys = ["Here's some text", "Some more text"]
+
+        for expected in test_bodys:
+            ok = self.call_function_under_test(body=expected)
+            body = ok.split(CRLF+CRLF, 1)[1]
+            self.assertEqual(body, expected,
+            "Expected: {}, but got {}".format(expected, body))
+
+
+
+class ResolveUriTestCase(unittest.TestCase):
+    """unit tests for the resolve_uri function"""
+    def call_function_under_test(self, uri):
+        from http_server import resolve_uri
+        return resolve_uri(uri)
+
+    def test_directories(self):
+        #TODO Write tests for directories
+        pass
+
+    def test_file_paths(self):
+        #TODO Write tests for actual files
+        pass
+
+    def test_image_loading(self):
+        #TODO Write tests for display images
+        pass
+
+    def test_unknown_uri(self):
+        #TODO Write tests for invalid URI
+        pass
 
 
 class ResponseMethodNotAllowedTestCase(unittest.TestCase):
@@ -101,6 +147,7 @@ class ParseRequestTestCase(unittest.TestCase):
             self.assertRaises(
                 NotImplementedError, self.call_function_under_test, request
             )
+
 
 class HTTPServerFunctionalTestCase(unittest.TestCase):
     """functional tests of the HTTP Server
