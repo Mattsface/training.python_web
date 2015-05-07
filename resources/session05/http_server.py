@@ -22,7 +22,6 @@ def response_method_not_allowed():
     return "\r\n".join(resp)
 
 
-# TODO create testing class for resolve_uri
 def resolve_uri(uri):
     """
     Function that handles looking resources on disk using the URI.
@@ -35,12 +34,12 @@ def resolve_uri(uri):
         return ls, 'text/plain'
     elif os.path.isfile(path):
         mime_type, encoding = mimetypes.guess_type(path)
-        file_contents = file(path, 'rb')
-        page = file_contents.read()
-        file_contents.close()
+        with open(path, 'rb') as f:
+            page = f.read()
         return page, mime_type
     else:
         raise ValueError("Could not find resource")
+
 
 def response_not_found():
     """
@@ -53,7 +52,7 @@ def response_not_found():
     resp.append("404 Not Found")
     return "\r\n".join(resp)
 
-# TODO Write tests for URI
+
 def parse_request(request):
     first_line = request.split(""
                                "\r\n", 1)[0]

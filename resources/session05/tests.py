@@ -1,5 +1,6 @@
 import mimetypes
 import socket
+import os
 import unittest
 
 
@@ -69,7 +70,6 @@ class ResponseOkTestCase(unittest.TestCase):
                 "Expected: {}, but got {}".format(expected, value))
 
     def test_passed_body_in_response(self):
-        # TODO make this test a little more complicated
         test_bodys = ["Here's some text", "Some more text"]
 
         for expected in test_bodys:
@@ -79,7 +79,6 @@ class ResponseOkTestCase(unittest.TestCase):
             "Expected: {}, but got {}".format(expected, body))
 
 
-
 class ResolveUriTestCase(unittest.TestCase):
     """unit tests for the resolve_uri function"""
     def call_function_under_test(self, uri):
@@ -87,20 +86,37 @@ class ResolveUriTestCase(unittest.TestCase):
         return resolve_uri(uri)
 
     def test_directories(self):
-        #TODO Write tests for directories
-        pass
+
+        # This test could be written to be less static
+        uri = "/stuff/"
+        expected_body = "index.html\npage.html"
+        expected_mimetype = 'text/plain'
+        ls, mimetype = self.call_function_under_test(uri)
+        self.assertEqual(ls, expected_body,
+                         "Expected body: {}, but got {}".format(expected_body, ls))
+
+        self.assertEqual(mimetype, expected_mimetype,
+                         "Expected mimetype: {}, but got {}".format(expected_mimetype, mimetype))
 
     def test_file_paths(self):
-        #TODO Write tests for actual files
-        pass
+        uri = "/stuff/index.html"
+        webroot = "webroot"
+        path = os.path.join(webroot + uri)
 
-    def test_image_loading(self):
-        #TODO Write tests for display images
-        pass
+        with open(path, 'rb') as f:
+            expected_body = f.read()
+
+        expected_mimetype, expected_encoding = mimetypes.guess_type(path)
+        value_page, value_mime_type = self.call_function_under_test(uri)
+        self.assertEqual(expected_body, value_page,
+                         "Expected page: {}, but got {}".format(expected_body, value_page))
+        self.assertEqual(expected_mimetype, value_mime_type,
+                         "Expected mimetype: {}, but got {}".format(expected_mimetype, value_mime_type))
 
     def test_unknown_uri(self):
-        #TODO Write tests for invalid URI
-        pass
+        uri = "/unknown/file.html"
+        with self.assertRaises(ValueError):
+            self.call_function_under_test(uri)
 
 
 class ResponseMethodNotAllowedTestCase(unittest.TestCase):
@@ -147,9 +163,17 @@ class ParseRequestTestCase(unittest.TestCase):
             self.assertRaises(
                 NotImplementedError, self.call_function_under_test, request
             )
+
     def test_returns_uri(self):
-        pass
-        #TODO Write test that parse request returns the URI
+        request = "GET /webroot/index.html HTTP/1.1\r\nHost: example.com\r\n\r\n"
+        expected = "/webroot/index.html"
+        try:
+            value = self.call_function_under_test(request)
+        except (NotImplementedError, Exception), e:
+            self.fail('GET method raises an error {0}'.format(str(e)))
+        value = value.strip()
+        self.assertEqual(expected, value)
+
 
 class HTTPServerFunctionalTestCase(unittest.TestCase):
     """functional tests of the HTTP Server
