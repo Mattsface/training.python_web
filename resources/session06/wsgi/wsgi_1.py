@@ -27,10 +27,10 @@ def application(environ, start_response):
     pprint.pprint(environ)
     response_body = body % (
         environ.get('SERVER_NAME', default),  # server name
-        'bbbb',  # server port
-        'cccc',  # client IP
-        'eeee',  # the URI path
-        'ffff',  # time
+        environ.get('SERVER_PORT', default),  # server port
+        environ.get('REMOTE_ADDR', default),  # client IP
+        environ.get('PATH_INFO', default),  # the URI path
+        datetime.datetime.now(),  # time
     )
     status = '200 OK'
 
