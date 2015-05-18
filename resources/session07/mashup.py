@@ -1,5 +1,7 @@
+#!/bin/env/python
 
 from bs4 import BeautifulSoup
+import geocoder
 import requests
 import re
 
@@ -92,15 +94,6 @@ def is_inspection_data_row(elem):
 
 
 def get_score_data(elem):
-    """
-    Take a div containing a restaurant record
-    Extract the rows containing inspection data
-    Keep track of the highest score recorded
-    Sum the total of all inspections
-    Count the number of inspections made
-    Calculate the average score for inspections
-    Return the three calculated values in a dictionary
-    """
     inspection_rows = elem.find_all(is_inspection_data_row)
     total = inspections = highest = 0
     for row in inspection_rows:
@@ -117,8 +110,15 @@ def get_score_data(elem):
     return {u'Average Score': average, u'Inspections Total': inspections, u'Highest Score': highest}
 
 
+def get_geojson(result):
+    address = " ".join(result.get('Address', ''))
+    if not address:
+        return None
+    geocoded = geocoder.google(address)
+    return geocoded.json
 
-if __name__ == '__main__':
+
+def result_generator(count):
     use_params = {
         'Inspection_Start': '03/02/2013',
         'Inspection_End': '03/02/2015',
@@ -129,9 +129,14 @@ if __name__ == '__main__':
     parsed = parse_source(html_content, encoding)
     content_col = parsed.find('td', id="contentcol")
     data_list = restaurant_data_generator(content_col)
-    for data_div in data_list:
+    for data_div in data_list[:count]:
         metadata = extract_restaurant_metadata(data_div)
         inspection_data = get_score_data(data_div)
         metadata.update(inspection_data)
-        print metadata
-        print '*'*10
+        yield metadata
+
+
+if __name__ == '__main__':
+    for result in result_generator(10):
+        geojson = get_geojson(result)
+        print geojson
