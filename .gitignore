@@ -45,3 +45,5 @@ html
 slides
 new_mash
 .idea*
+soupenv
+soupenv/*
